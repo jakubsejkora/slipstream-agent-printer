@@ -1,0 +1,92 @@
+#!/bin/sh
+# slip: print a todo slip with Slipstream (talks to the app's local API; needs only curl).
+#
+#   slip 'Buy milk !! #home @today'          quick syntax: !..!!! priority, #tag, @today/@zítra/@fri/@20.11.
+#   slip -p 2 -t home -d today 'Buy milk'     the same with flags (no shell quoting surprises)
+#   slip -n 'ask about the crown' 'Dentist'   add a note
+#   slip --design swiss-grid 'Title'          pick a design
+#   slip --preview out.png 'Title'            render the exact thermal bitmap, print nothing
+#   slip ls [open|done|all]   slip done 42   slip undone 42   slip reprint 42   slip status
+#
+# Use single quotes: zsh and bash expand "!!" inside double quotes, and "#" starts a comment.
+set -eu
+
+for f in "${SLIPSTREAM_ENV:-}" "$HOME/Library/Application Support/Slipstream/api.env" "$HOME/Library/Application Support/Slipstream Dev/api.env"; do
+  if [ -n "$f" ] && [ -f "$f" ]; then
+    # shellcheck disable=SC1090
+    . "$f"
+    break
+  fi
+done
+URL="${SLIPSTREAM_URL:-http://127.0.0.1:4747}"
+TOKEN="${SLIPSTREAM_TOKEN:-}"
+
+die() { printf 'slip: %s\n' "$*" >&2; exit 1; }
+[ -n "$TOKEN" ] || die "no API token found. Open Slipstream once (Settings → Integrations) or set SLIPSTREAM_TOKEN."
+
+ensure_running() {
+  if ! curl -fsS -m 1 "$URL/v1/health" >/dev/null 2>&1; then
+    open -g -a Slipstream 2>/dev/null || true
+    i=0
+    while [ $i -lt 40 ]; do
+      curl -fsS -m 1 "$URL/v1/health" >/dev/null 2>&1 && return 0
+      sleep 0.25
+      i=$((i + 1))
+    done
+    die "Slipstream is not running at $URL"
+  fi
+}
+
+api() {
+  curl -sS --fail-with-body -H "Authorization: Bearer $TOKEN" -H "X-Slipstream-Source: cli" "$@" || exit 1
+}
+
+case "${1:-}" in
+  ""|-h|--help)
+    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0 ;;
+  ls)
+    ensure_running
+    api "$URL/v1/slips?status=${2:-open}&format=text&limit=${3:-50}"
+    exit 0 ;;
+  done|undone|reprint)
+    [ -n "${2:-}" ] || die "usage: slip $1 <number>"
+    ensure_running
+    api -X POST "$URL/v1/slips/$2/$1?format=text"
+    exit 0 ;;
+  status)
+    ensure_running
+    api "$URL/v1/printer"
+    echo
+    exit 0 ;;
+esac
+
+NOTE=""
+DESIGN=""
+PREVIEW=""
+EXTRA=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -n|--note) NOTE="$2"; shift 2 ;;
+    -p|--priority)
+      case "$2" in 1) EXTRA="$EXTRA !" ;; 2) EXTRA="$EXTRA !!" ;; 3) EXTRA="$EXTRA !!!" ;; *) die "priority is 1, 2 or 3" ;; esac
+      shift 2 ;;
+    -t|--tag) EXTRA="$EXTRA #${2#\#}"; shift 2 ;;
+    -d|--due) EXTRA="$EXTRA @${2#@}"; shift 2 ;;
+    --design) DESIGN="$2"; shift 2 ;;
+    --preview) PREVIEW="$2"; shift 2 ;;
+    --) shift; break ;;
+    -*) die "unknown option $1 (see slip --help)" ;;
+    *) break ;;
+  esac
+done
+TEXT="$*$EXTRA"
+[ -n "$(printf '%s' "$TEXT" | tr -d ' ')" ] || die "nothing to print"
+
+ensure_running
+if [ -n "$PREVIEW" ]; then
+  api -X POST "$URL/v1/quick?preview" --data-urlencode "text=$TEXT" --data-urlencode "note=$NOTE" ${DESIGN:+--data-urlencode "designId=$DESIGN"} -o "$PREVIEW"
+  echo "Saved preview to $PREVIEW"
+else
+  api -X POST "$URL/v1/quick?format=text" --data-urlencode "text=$TEXT" ${NOTE:+--data-urlencode "note=$NOTE"} ${DESIGN:+--data-urlencode "designId=$DESIGN"}
+fi

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f3f46"/>
+      <stop offset="1" stop-color="#0c0c0f"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef1f3"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+    <clipPath id="above-slot"><rect x="0" y="0" width="1024" height="742"/></clipPath>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="186" fill="url(#bg)"/>
+  <rect x="100.5" y="100.5" width="823" height="823" rx="185.5" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  <!-- the slip rising out of the printer slot -->
+  <g clip-path="url(#above-slot)" filter="url(#shadow)">
+    <rect x="322" y="214" width="380" height="560" fill="url(#paper)"/>
+    <!-- title, set like the Terminal Pixel default -->
+    <rect x="362" y="262" width="222" height="58" fill="#111"/>
+    <rect x="362" y="342" width="164" height="58" fill="#111"/>
+    <rect x="538" y="342" width="34" height="58" fill="#111"/>
+    <rect x="362" y="452" width="300" height="10" fill="#111"/>
+    <rect x="362" y="490" width="240" height="10" fill="#111"/>
+    <!-- code rail: QR + bars -->
+    <g fill="#111">
+      <rect x="362" y="560" width="96" height="96"/>
+      <rect x="374" y="572" width="72" height="72" fill="#fff"/>
+      <rect x="388" y="586" width="44" height="44"/>
+      <rect x="484" y="560" width="8" height="96"/><rect x="500" y="560" width="16" height="96"/><rect x="524" y="560" width="8" height="96"/>
+      <rect x="540" y="560" width="24" height="96"/><rect x="572" y="560" width="8" height="96"/><rect x="588" y="560" width="16" height="96"/>
+      <rect x="612" y="560" width="8" height="96"/><rect x="628" y="560" width="24" height="96"/><rect x="660" y="560" width="8" height="96"/>
+    </g>
+  </g>
+  <!-- printer slot -->
+  <rect x="262" y="736" width="500" height="34" rx="17" fill="#050506"/>
+  <rect x="262" y="768" width="500" height="3" rx="1.5" fill="#ffffff" fill-opacity="0.18"/>
+</svg>

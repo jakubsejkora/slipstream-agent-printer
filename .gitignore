@@ -1,0 +1,9 @@
+*.log
+.DS_Store
+.context
+coverage
+dist
+node_modules
+out
+out-*
+test/golden/__diff__
