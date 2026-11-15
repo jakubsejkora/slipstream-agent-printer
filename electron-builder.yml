@@ -1,0 +1,42 @@
+appId: app.slipstream.mac
+productName: Slipstream
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+extraResources:
+  - from: resources/cli
+    to: cli
+  - from: resources/raycast
+    to: raycast
+asarUnpack:
+  - 'node_modules/@node-usb/**'
+  - 'node_modules/zxing-wasm/**'
+npmRebuild: false
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64]
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    LSUIElement: true
+    CFBundleURLTypes:
+      - CFBundleURLName: Slipstream deep link
+        CFBundleURLSchemes: [slipstream]
+  notarize: false
+dmg:
+  artifactName: ${name}-${version}.${ext}
+# Release hardening (keep ELECTRON_RUN_AS_NODE off: the slip CLI is a shell script, not Node).
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true

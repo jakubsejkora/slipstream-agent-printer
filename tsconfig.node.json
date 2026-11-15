@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node", "vite/client", "w3c-web-usb"]
+  },
+  "include": ["electron.vite.config.mts", "vitest.config.mts", "src/main/**/*", "src/preload/**/*", "src/shared/**/*", "src/core/**/*", "src/raster/**/*", "src/escpos/**/*", "src/printer/**/*", "src/designs/**/meta.ts", "src/designs/registry-meta.ts", "src/designs/types.ts", "src/designs/tokens.ts", "test/**/*"]
+}
